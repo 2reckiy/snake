@@ -16,7 +16,7 @@ export const SERVER_EVENT = {
 
 class API {
   socket = null;
-  url = 'https://snake-api-1.herokuapp.com/';
+  url = 'wss://snake-api-1.herokuapp.com/';
 
   createConnection() {
     this.socket = io(this.url);
