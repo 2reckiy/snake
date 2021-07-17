@@ -1,0 +1,37 @@
+html, body, #game {
+  height: 100%;
+  margin: 0;
+}
+
+#game {
+  display: flex;
+  flex-direction: column;
+}
+
+#gameborad {
+  border: 0;
+  padding: 0;
+  outline: none;
+  background: black;
+}
+#menu {
+  display: flex;
+  flex-direction: row;
+
+}
+
+#addai {
+  display: block;
+}
+
+#addai.inactive {
+  display: none;
+}
+
+#restart {
+  display: none;
+}
+
+#restart.active {
+  display: block;
+}
