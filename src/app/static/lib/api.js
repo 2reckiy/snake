@@ -1,25 +1,27 @@
 export const CLIENT_EVENT = {
-  CREATE_GAME: 'creategame',
-  JOIN_GAME: 'joingame',
-  GAME_TURN: 'gameturn',
-  PLAYER_PAUSE: 'playerpause',
-}
+  CREATE_GAME: "creategame",
+  JOIN_GAME: "joingame",
+  GAME_TURN: "gameturn",
+  PLAYER_PAUSE: "playerpause",
+};
 
 export const SERVER_EVENT = {
-  GAME_LIST: 'gamelist',
-  GAME_INIT: 'gameinit',
-  GAME_END: 'gameend',
-  GAME_TICK: 'gametick',
-  GAME_JOINED: 'gamejoined',
-  PLAYER_PAUSED: 'playerpaused',
-}
+  GAME_LIST: "gamelist",
+  GAME_INIT: "gameinit",
+  GAME_END: "gameend",
+  GAME_TICK: "gametick",
+  GAME_JOINED: "gamejoined",
+  PLAYER_PAUSED: "playerpaused",
+};
 
 class API {
   socket = null;
-  url = 'wss://snake-api-1.herokuapp.com/';
+  url = "https://mysterious-beyond-92171.herokuapp.com/";
 
   createConnection() {
-    this.socket = io(this.url);
+    this.socket = io(this.url, {
+      transports: ["websocket", "polling", "flashsocket"],
+    });
   }
 
   subscribe(event, listener) {
@@ -30,7 +32,7 @@ class API {
   unsubscribe(event) {
     this.socket.removeAllListeners(event);
   }
-  
+
   send(clientEvent, params = {}) {
     this.socket.emit(clientEvent, params);
   }
