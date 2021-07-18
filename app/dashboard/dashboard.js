@@ -33,15 +33,17 @@ export default class extends AbstractView {
     createGameBtn.addEventListener("click", () =>
       api.send(CLIENT_EVENT.CREATE_GAME)
     );
+
+    api.send(CLIENT_EVENT.GAME_LIST);
   }
 
   gameList(games) {
     const noGameTitle = document.getElementById("no-game-title");
     const gameList = document.getElementById("game-list");
-    
+
     gameList.innerHTML = "";
-    noGameTitle.classList.toggle('show', !games.length);
-    
+    noGameTitle.classList.toggle("show", !games.length);
+
     games.forEach((game, i) => {
       const btn = document.createElement("div");
       btn.id = "current-game";

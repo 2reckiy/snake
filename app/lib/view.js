@@ -1,14 +1,15 @@
 export default class {
   constructor(params) {
-      this.params = params;
+    this.params = params;
+    this.templatePath = "./index.css";
   }
 
   setTitle(title) {
-      document.title = title;
+    document.title = title;
   }
 
-  async getHtml() {
-      return "";
+  getHtml() {
+return '';
   }
 
   onInit() {}
