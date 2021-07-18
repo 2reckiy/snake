@@ -16,7 +16,7 @@ export const SERVER_EVENT = {
 
 class API {
   socket = null;
-  url = 'http://localhost:3000/' // "https://mysterious-beyond-92171.herokuapp.com/";
+  url = 'https://mysterious-beyond-92171.herokuapp.com/';
 
   createConnection() {
     this.socket = io(this.url, {
