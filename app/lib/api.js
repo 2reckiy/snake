@@ -1,9 +1,12 @@
+import { store } from "./store.js";
+
 export const CLIENT_EVENT = {
   GAME_LIST: "gamelist",
   CREATE_GAME: "creategame",
   JOIN_GAME: "joingame",
   GAME_TURN: "gameturn",
   PLAYER_PAUSE: "playerpause",
+  PLAYER_RESPAWN: 'playerrespawn',
 };
 
 export const SERVER_EVENT = {
@@ -13,6 +16,7 @@ export const SERVER_EVENT = {
   GAME_TICK: "gametick",
   GAME_JOIN: "gamejoin",
   PLAYER_PAUSE: "playerpause",
+  PLAYER_RESPAWN: 'playerrespawn',
 };
 
 class API {
@@ -23,6 +27,7 @@ class API {
 
   createConnection() {
     this.socket = io(this.url);
+    store.setUser(this.socket.id);
   }
 
   subscribe(event, listener) {

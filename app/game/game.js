@@ -1,6 +1,7 @@
 import { GAME_EVENT, Game } from "../lib/game.js";
 import { Player } from "../lib/player.js";
 import { spa } from "../lib/spa.js";
+import { store } from "../lib/store.js";
 import AbstractView from "../lib/view.js";
 
 export default class extends AbstractView {
@@ -22,10 +23,11 @@ export default class extends AbstractView {
         <canvas id="gameborad" width="400" height="400"></canvas>
         <div id="menu">
           <span id="pause" class="menu-button">Pause</span>
-          <span id="restart" class="menu-button">Restart</span>
+          <span id="respawn" class="menu-button">Respawn</span>
           <!-- <span id="addai" class="menu-button">Add AI</span> -->
         </div>
       </div>
+
       <div id="end-game-notification-popup" class="popup">
         <div id="end-game-notification-conatainer" class="popup-container">
           <span class="popup-title">Game is over!</span>
@@ -58,12 +60,11 @@ export default class extends AbstractView {
     this.joinGame(this.player);
 
     this.game.on(GAME_EVENT.TICK, (score) => this.updateScore(score));
-    this.game.on(GAME_EVENT.JOIN_AI, () => {
-      addaiBtn.classList.toggle("inactive");
-    });
-    this.game.on(GAME_EVENT.RESTART, () => {
-      restartBtn.classList.toggle("active");
-    });
+    // this.game.on(GAME_EVENT.JOIN_AI, () => {
+    //   addaiBtn.classList.toggle("inactive");
+    // });
+    this.game.on(GAME_EVENT.DEAD, () => this.onPlayerDead());
+    this.game.on(GAME_EVENT.RESPAWN, () => this.onPlayerRespawn());
     this.game.on(GAME_EVENT.END, (state) => this.onGameEnd(state));
 
     const playerEl = document.getElementById("player");
@@ -74,9 +75,9 @@ export default class extends AbstractView {
       this.game.togglePause();
     });
 
-    const restartBtn = document.getElementById("restart");
-    restartBtn.addEventListener("click", (e) => {
-      this.game.join(this.player);
+    const respawnBtn = document.getElementById("respawn");
+    respawnBtn.addEventListener("click", (e) => {
+      this.game.respawn(this.player);
     });
   }
 
@@ -89,7 +90,7 @@ export default class extends AbstractView {
   }
 
   createPlayer() {
-    this.player = new Player();
+    this.player = new Player(store.user.id);
     this.player.init(false, true, "green");
   }
 
@@ -100,6 +101,22 @@ export default class extends AbstractView {
   updateScore(score) {
     const scoreElement = document.getElementById("score");
     scoreElement.innerHTML = score;
+  }
+
+  onPlayerDead() {
+    const respawnBtn = document.getElementById("respawn");
+    respawnBtn.classList.toggle('active', true);
+
+    const pausetBtn = document.getElementById("pause");
+    pausetBtn.classList.toggle('active', false);
+  }
+
+  onPlayerRespawn() {
+    const respawnBtn = document.getElementById("respawn");
+    respawnBtn.classList.toggle('active', false);
+
+    const pausetBtn = document.getElementById("pause");
+    pausetBtn.classList.toggle('active', true);
   }
 
   onGameEnd(state) {
@@ -113,6 +130,7 @@ export default class extends AbstractView {
 
     const backBtn = document.getElementById("end-game-notification-popup-back");
     backBtn.addEventListener("click", (e) => {
+      // TODO: shopuld clear game instane?
       spa.navigateTo('/');
     });
   }
