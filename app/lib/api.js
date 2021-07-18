@@ -19,9 +19,7 @@ class API {
   url = 'https://snake-api-1.herokuapp.com/';
 
   createConnection() {
-    this.socket = io(this.url, {
-      transports: ["websocket", "polling", "flashsocket"],
-    });
+    this.socket = io(this.url);
   }
 
   subscribe(event, listener) {
