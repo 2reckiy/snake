@@ -1,3 +1,4 @@
+import { api, CLIENT_EVENT } from "../lib/api.js";
 import { GAME_EVENT, Game } from "../lib/game.js";
 import { Player } from "../lib/player.js";
 import { spa } from "../lib/spa.js";
@@ -47,25 +48,25 @@ export default class extends AbstractView {
     canvas.setAttribute("tabindex", "0");
     canvas.focus();
     const context = canvas.getContext("2d");
-
-    // const addaiBtn = document.getElementById("addai");
-    // addaiBtn.addEventListener("click", (e) => {
-    //   const player = new Player();
-    //   player.init(true, false, "blue");
-    //   this.game.join(player);
-    // });
-
+    
     this.gameInit(canvas, context);
     this.createPlayer();
-    this.joinGame(this.player);
 
-    this.game.on(GAME_EVENT.TICK, (score) => this.updateScore(score));
-    // this.game.on(GAME_EVENT.JOIN_AI, () => {
-    //   addaiBtn.classList.toggle("inactive");
-    // });
-    this.game.on(GAME_EVENT.DEAD, () => this.onPlayerDead());
-    this.game.on(GAME_EVENT.RESPAWN, () => this.onPlayerRespawn());
-    this.game.on(GAME_EVENT.END, (state) => this.onGameEnd(state));
+    const previouseConnection = store.get("previouseConnection");
+    if (previouseConnection) {
+      api.send(CLIENT_EVENT.PREVIOUSE_CONNECTION, {
+        clientId: previouseConnection,
+        cb: (isPreviouseGame) => {
+          if (isPreviouseGame) {
+
+          } else {
+            this.joinGame(this.player);
+          }
+        },
+      });
+    } else {
+      
+    }
 
     const playerEl = document.getElementById("player");
     playerEl.innerHTML = this.player.id;
@@ -83,6 +84,11 @@ export default class extends AbstractView {
 
   gameInit(canvas, context) {
     this.game = new Game(this.params.id, canvas, context);
+
+    this.game.on(GAME_EVENT.TICK, (score) => this.updateScore(score));
+    this.game.on(GAME_EVENT.DEAD, () => this.onPlayerDead());
+    this.game.on(GAME_EVENT.RESPAWN, () => this.onPlayerRespawn());
+    this.game.on(GAME_EVENT.END, (state) => this.onGameEnd(state));
 
     document.addEventListener("keydown", (e) => {
       this.game.controlling(e);
@@ -105,23 +111,23 @@ export default class extends AbstractView {
 
   onPlayerDead() {
     const respawnBtn = document.getElementById("respawn");
-    respawnBtn.classList.toggle('active', true);
+    respawnBtn.classList.toggle("active", true);
 
     const pausetBtn = document.getElementById("pause");
-    pausetBtn.classList.toggle('active', false);
+    pausetBtn.classList.toggle("active", false);
   }
 
   onPlayerRespawn() {
     const respawnBtn = document.getElementById("respawn");
-    respawnBtn.classList.toggle('active', false);
+    respawnBtn.classList.toggle("active", false);
 
     const pausetBtn = document.getElementById("pause");
-    pausetBtn.classList.toggle('active', true);
+    pausetBtn.classList.toggle("active", true);
   }
 
   onGameEnd(state) {
     const popupEL = document.getElementById("end-game-notification-popup");
-    popupEL.classList.toggle('active', true);
+    popupEL.classList.toggle("active", true);
 
     const winnerNameEL = document.getElementById("winner-name");
     winnerNameEL.innerHTML = state.winnerName;
@@ -131,7 +137,7 @@ export default class extends AbstractView {
     const backBtn = document.getElementById("end-game-notification-popup-back");
     backBtn.addEventListener("click", (e) => {
       // TODO: shopuld clear game instane?
-      spa.navigateTo('/');
+      spa.navigateTo("/");
     });
   }
 }

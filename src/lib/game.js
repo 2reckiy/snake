@@ -58,7 +58,6 @@ export class Game {
     requestAnimationFrame(() => this.draw(state));
   }
 
-
   join(player) {
     if (player.isMe) {
       this.player = player;
