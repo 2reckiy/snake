@@ -53,8 +53,8 @@ module.exports = {
   },
   externals: {
     // "socket.io-client": "io",
-    bufferutil: "bufferutil",
-    "utf-8-validate": "utf-8-validate",
+    // bufferutil: "bufferutil",
+    // "utf-8-validate": "utf-8-validate",
   },
   // resolve: {
   //   alias: {
