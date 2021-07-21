@@ -52,20 +52,20 @@ module.exports = {
     // noParse: [/socket.io-client/],
   },
   externals: {
-    "socket.io-client": "io",
+    // "socket.io-client": "io",
     bufferutil: "bufferutil",
     "utf-8-validate": "utf-8-validate",
   },
-  resolve: {
-    alias: {
-      "socket.io-client": path.join(
-        __dirname,
-        "node_modules",
-        "socket.io-client",
-        "socket.io.slim.js"
-      ),
-    },
-  },
+  // resolve: {
+  //   alias: {
+  //     "socket.io-client": path.join(
+  //       __dirname,
+  //       "node_modules",
+  //       "socket.io-client",
+  //       "socket.io.slim.js"
+  //     ),
+  //   },
+  // },
   plugins: [
     new HtmlWebpackPlugin({
       template: "./src/index.html",

@@ -1,4 +1,7 @@
+
+import io from 'socket.io-client'
 import { store } from "./store.js";
+
 
 export const CLIENT_EVENT = {
   GAME_LIST: "gamelist",
@@ -28,22 +31,22 @@ class API {
     : "https://snake-api-1.herokuapp.com/";
 
   createConnection() {
-    // return new Promise((res, rej) => {
-    //   const previouseConnection = localStorage.getItem("socketId");
-    //   this.socket = io(this.url, {
-    //     query: {
-    //       previouseConnection: previouseConnection || "",
-    //     },
-    //   });
-    //   this.socket.on("connect", () => {
-    //     localStorage.setItem("socketId", this.socket.id);
-    //     store.setUser(this.socket.id);
-    //     if (previouseConnection) {
-    //       store.set('previouseConnection', previouseConnection);
-    //     }
-    //     res(previouseConnection);
-    //   });
-    // });
+    return new Promise((res, rej) => {
+      const previouseConnection = localStorage.getItem("socketId");
+      this.socket = io(this.url, {
+        query: {
+          previouseConnection: previouseConnection || "",
+        },
+      });
+      this.socket.on("connect", () => {
+        localStorage.setItem("socketId", this.socket.id);
+        store.setUser(this.socket.id);
+        if (previouseConnection) {
+          store.set('previouseConnection', previouseConnection);
+        }
+        res(previouseConnection);
+      });
+    });
   }
 
   subscribe(event, listener) {
