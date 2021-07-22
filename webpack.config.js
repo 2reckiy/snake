@@ -33,39 +33,8 @@ module.exports = {
           },
         ],
       },
-      // {
-      //   test: /\.m?js$/,
-      //   exclude: /node_modules/,
-      //   use: {
-      //     loader: "babel-loader",
-      //     options: {
-      //       presets: ["@babel/preset-env"],
-      //       plugins: ["@babel/plugin-transform-object-assign"],
-      //     },
-      //   },
-      // },
-      // {
-      //   test: /\.js$/,
-      //   loader: "webpack-remove-debug",
-      // },
     ],
-    // noParse: [/socket.io-client/],
   },
-  externals: {
-    // "socket.io-client": "io",
-    // bufferutil: "bufferutil",
-    // "utf-8-validate": "utf-8-validate",
-  },
-  // resolve: {
-  //   alias: {
-  //     "socket.io-client": path.join(
-  //       __dirname,
-  //       "node_modules",
-  //       "socket.io-client",
-  //       "socket.io.slim.js"
-  //     ),
-  //   },
-  // },
   plugins: [
     new HtmlWebpackPlugin({
       template: "./src/index.html",

@@ -27,12 +27,11 @@ export default class extends AbstractView {
 
   onInit() {
     api.subscribe(SERVER_EVENT.GAME_LIST, (games) => this.gameList(games));
-    api.subscribe(SERVER_EVENT.GAME_INIT, (gameId) => this.gameInit(gameId));
 
     const createGameBtn = document.getElementById("create-game");
-    createGameBtn.addEventListener("click", () =>
-      api.send(CLIENT_EVENT.CREATE_GAME)
-    );
+    createGameBtn.addEventListener("click", () => {
+      this.navigateToGame();
+    });
 
     api.send(CLIENT_EVENT.GAME_LIST);
   }
@@ -44,23 +43,18 @@ export default class extends AbstractView {
     gameList.innerHTML = "";
     noGameTitle.classList.toggle("show", !games.length);
 
-    games.forEach((game, i) => {
+    games.forEach((gameId, i) => {
       const btn = document.createElement("div");
       btn.id = "current-game";
       btn.className = "menu-button";
       btn.innerHTML = `Game ${i}`;
-      btn.onclick = () => {
-        api.unsubscribe(SERVER_EVENT.GAME_LIST);
-        api.unsubscribe(SERVER_EVENT.GAME_INIT);
-        spa.navigateTo(`/game/${game}`);
-      };
+      btn.onclick = () => this.navigateToGame(gameId);
       gameList.appendChild(btn);
     });
   }
 
-  gameInit(gameId) {
+  navigateToGame(gameId) {
     api.unsubscribe(SERVER_EVENT.GAME_LIST);
-    api.unsubscribe(SERVER_EVENT.CREATE_GAME);
-    spa.navigateTo(`/game/${gameId}`);
+    gameId ? spa.navigateTo(`#/game/${gameId}`) : spa.navigateTo(`#/game`);
   }
 }

@@ -10,7 +10,6 @@ export const CLIENT_EVENT = {
   GAME_TURN: "gameturn",
   PLAYER_PAUSE: "playerpause",
   PLAYER_RESPAWN: "playerrespawn",
-  PREVIOUSE_CONNECTION: "previouseConnection",
 };
 
 export const SERVER_EVENT = {
@@ -21,7 +20,7 @@ export const SERVER_EVENT = {
   GAME_JOIN: "gamejoin",
   PLAYER_PAUSE: "playerpause",
   PLAYER_RESPAWN: "playerrespawn",
-  PREVIOUSE_GAME: "previousegame",
+  NO_GAME: 'nogame',
 };
 
 class API {
@@ -33,18 +32,14 @@ class API {
   createConnection() {
     return new Promise((res, rej) => {
       const previouseConnection = localStorage.getItem("socketId");
-      this.socket = io(this.url, {
-        query: {
-          previouseConnection: previouseConnection || "",
-        },
-      });
+      this.socket = io(this.url);
       this.socket.on("connect", () => {
         localStorage.setItem("socketId", this.socket.id);
         store.setUser(this.socket.id);
         if (previouseConnection) {
-          store.set('previouseConnection', previouseConnection);
+          store.set('previouseSocketId', previouseConnection);
         }
-        res(previouseConnection);
+        res();
       });
     });
   }

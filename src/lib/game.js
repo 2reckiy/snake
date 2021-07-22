@@ -1,4 +1,5 @@
 import { api, CLIENT_EVENT, SERVER_EVENT } from "./api.js";
+import { store } from "./store.js";
 
 export const GAME_EVENT = {
   END: 0,
@@ -8,6 +9,7 @@ export const GAME_EVENT = {
   TICK: 4,
   DEAD: 5,
   RESPAWN: 6,
+  NO_GAME: 7,
 };
 
 const BG_COLOUR = "#231f20";
@@ -32,6 +34,7 @@ export class Game {
       this.onPlayerPause(playerId)
     );
     api.subscribe(SERVER_EVENT.PLAYER_RESPAWN, () => this.onPlayerRespawn());
+    api.subscribe(SERVER_EVENT.NO_GAME, () => this.onNoGame());
   }
 
   on(event, listener) {
@@ -63,7 +66,11 @@ export class Game {
       this.player = player;
     }
 
-    api.send(CLIENT_EVENT.JOIN_GAME, { gameId: this.id, playerId: player.id });
+    api.send(CLIENT_EVENT.JOIN_GAME, {
+      gameId: this.id,
+      playerId: player.id,
+      prevPlayerId: store.get("previouseSocketId") || "",
+    });
 
     player.isAI ? this.emit(GAME_EVENT.JOIN_AI) : this.emit(GAME_EVENT.JOIN);
   }
@@ -150,6 +157,17 @@ export class Game {
     api.unsubscribe(SERVER_EVENT.GAME_END);
     api.unsubscribe(SERVER_EVENT.PLAYER_PAUSE);
     api.unsubscribe(SERVER_EVENT.PLAYER_RESPAWN);
+    api.unsubscribe(SERVER_EVENT.NO_GAME);
     this.emit(GAME_EVENT.END, state);
+  }
+
+  onNoGame() {
+    api.unsubscribe(SERVER_EVENT.GAME_JOIN);
+    api.unsubscribe(SERVER_EVENT.GAME_TICK);
+    api.unsubscribe(SERVER_EVENT.GAME_END);
+    api.unsubscribe(SERVER_EVENT.PLAYER_PAUSE);
+    api.unsubscribe(SERVER_EVENT.PLAYER_RESPAWN);
+    api.unsubscribe(SERVER_EVENT.NO_GAME);
+    this.emit(GAME_EVENT.NO_GAME, state);
   }
 }

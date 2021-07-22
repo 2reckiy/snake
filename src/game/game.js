@@ -1,4 +1,4 @@
-import { api, CLIENT_EVENT } from "../lib/api.js";
+import { api, CLIENT_EVENT, SERVER_EVENT } from "../lib/api.js";
 import { GAME_EVENT, Game } from "../lib/game.js";
 import { Player } from "../lib/player.js";
 import { spa } from "../lib/spa.js";
@@ -31,8 +31,8 @@ export default class extends AbstractView {
 
       <div id="end-game-notification-popup" class="popup">
         <div id="end-game-notification-conatainer" class="popup-container">
-          <span class="popup-title">Game is over!</span>
-          <div class="popup-content">
+          <span id="popup-title" class="popup-title">Game is over!</span>
+          <div id="popup-content" class="popup-content">
             <span class="popup-caption">Winner</span><span id="winner-name" class="winner-text"></span>
             <span class="popup-caption">Score</span><span id="winner-score" class="winner-text"></span>
           </div>
@@ -48,28 +48,22 @@ export default class extends AbstractView {
     canvas.setAttribute("tabindex", "0");
     canvas.focus();
     const context = canvas.getContext("2d");
-    
-    this.gameInit(canvas, context);
+
     this.createPlayer();
-
-    const previouseConnection = store.get("previouseConnection");
-    if (previouseConnection) {
-      api.send(CLIENT_EVENT.PREVIOUSE_CONNECTION, {
-        clientId: previouseConnection,
-        cb: (isPreviouseGame) => {
-          if (isPreviouseGame) {
-
-          } else {
-            this.joinGame(this.player);
-          }
-        },
-      });
-    } else {
-      
-    }
 
     const playerEl = document.getElementById("player");
     playerEl.innerHTML = this.player.id;
+
+    if (this.params.id) {
+      this.gameInit(canvas, context, this.params.id);
+      this.joinGame(this.player);
+    } else {
+      api.subscribe(SERVER_EVENT.GAME_INIT, (gameId) => {
+        this.gameInit(canvas, context, gameId);
+        this.joinGame(this.player);
+      });
+      api.send(CLIENT_EVENT.CREATE_GAME);
+    }
 
     const pausetBtn = document.getElementById("pause");
     pausetBtn.addEventListener("click", (e) => {
@@ -82,13 +76,14 @@ export default class extends AbstractView {
     });
   }
 
-  gameInit(canvas, context) {
-    this.game = new Game(this.params.id, canvas, context);
+  gameInit(canvas, context, gameId) {
+    this.game = new Game(gameId, canvas, context);
 
     this.game.on(GAME_EVENT.TICK, (score) => this.updateScore(score));
     this.game.on(GAME_EVENT.DEAD, () => this.onPlayerDead());
     this.game.on(GAME_EVENT.RESPAWN, () => this.onPlayerRespawn());
     this.game.on(GAME_EVENT.END, (state) => this.onGameEnd(state));
+    this.game.on(GAME_EVENT.NO_GAME, (stte) => this.onNoGame());
 
     document.addEventListener("keydown", (e) => {
       this.game.controlling(e);
@@ -137,7 +132,21 @@ export default class extends AbstractView {
     const backBtn = document.getElementById("end-game-notification-popup-back");
     backBtn.addEventListener("click", (e) => {
       // TODO: shopuld clear game instane?
-      spa.navigateTo("/");
+      spa.navigateTo("/#");
+    });
+  }
+
+  onNoGame() {
+    const popupEL = document.getElementById("end-game-notification-popup");
+    popupEL.classList.toggle("active", true);
+
+    const popupContentEL = document.getElementById("popup-content");
+    popupContentEL.innerHTML = '';
+
+    const backBtn = document.getElementById("end-game-notification-popup-back");
+    backBtn.addEventListener("click", (e) => {
+      // TODO: shopuld clear game instane?
+      spa.navigateTo("/#");
     });
   }
 }
