@@ -2,17 +2,17 @@ import { genereateId } from "./utils.js";
 
 export class Player {
   id = null;
-  color = null;
+  name = null;
   isAI = false;
   isMe = false;
 
-  constructor(id) {
+  constructor(id, name) {
     this.id = id || genereateId();
+    this.name = name;
   }
 
-  init(isAI, isMe, color) {
+  init(isAI, isMe) {
     this.isAI = isAI;
     this.isMe = isMe;
-    this.color = color;
   }
 }

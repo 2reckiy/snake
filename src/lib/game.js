@@ -1,5 +1,6 @@
 import { api, CLIENT_EVENT, SERVER_EVENT } from "./api.js";
-import { store } from "./store.js";
+import { audioPlayer } from "./audio-player.js";
+import { store, STORE_KEY } from "./store.js";
 
 export const GAME_EVENT = {
   END: 0,
@@ -27,14 +28,16 @@ export class Game {
     this.canvas = canvas;
     this.context = context;
 
-    api.subscribe(SERVER_EVENT.GAME_JOIN, () => this.onPlayerJoin());
+    api.subscribe(SERVER_EVENT.GAME_JOIN, (isReady) =>
+      this.onPlayerJoin(isReady)
+    );
     api.subscribe(SERVER_EVENT.GAME_TICK, (state) => this.tick(state));
     api.subscribe(SERVER_EVENT.GAME_END, (state) => this.onGameEnd(state));
-    api.subscribe(SERVER_EVENT.PLAYER_PAUSE, (playerId) =>
-      this.onPlayerPause(playerId)
-    );
+    api.subscribe(SERVER_EVENT.PLAYER_PAUSE, () => this.onPlayerPause());
     api.subscribe(SERVER_EVENT.PLAYER_RESPAWN, () => this.onPlayerRespawn());
     api.subscribe(SERVER_EVENT.NO_GAME, () => this.onNoGame());
+
+    store.set(STORE_KEY.GAME_ID, id);
   }
 
   on(event, listener) {
@@ -54,11 +57,13 @@ export class Game {
   }
 
   tick(state) {
-    const amIDead = state.deadPlayers.includes(this.player.id);
+    const amIDead = Object.values(state.players).some(
+      (player) => player.id === this.player.id && player.isDead
+    );
     if (amIDead) {
       this.emit(GAME_EVENT.DEAD);
     }
-    requestAnimationFrame(() => this.draw(state));
+    requestAnimationFrame(() => this.handleTick(state));
   }
 
   join(player) {
@@ -69,6 +74,7 @@ export class Game {
     api.send(CLIENT_EVENT.JOIN_GAME, {
       gameId: this.id,
       playerId: player.id,
+      playerName: player.name,
       prevPlayerId: store.get("previouseSocketId") || "",
     });
 
@@ -95,6 +101,22 @@ export class Game {
     });
   }
 
+  handleTick(state) {
+    this.sound(state);
+    this.draw(state);
+  }
+
+  sound(state) {
+    // sounds
+    if (state.grownNow.includes(this.player.id)) {
+      audioPlayer.play(1);
+    }
+
+    if (state.diedNow.includes(this.player.id)) {
+      audioPlayer.play(2);
+    }
+  }
+
   draw(state) {
     const gridSize = state.gridSize;
     const size = this.canvas.width / gridSize;
@@ -104,13 +126,23 @@ export class Game {
 
     this.drawSnakes(state.players, size);
     this.drawFood(state.food, size);
+    if (state.difficulty >= 2) {
+      this.drawRocks(state.rocks, size);
+    }
 
     this.emit(GAME_EVENT.TICK, this.getPlayerScore(state));
   }
 
   drawFood(food, size) {
-    this.context.fillStyle = "red";
+    this.context.fillStyle = food.color;
     this.context.fillRect(food.x * size, food.y * size, size - 1, size - 1);
+  }
+
+  drawRocks(rocks, size) {
+    this.context.fillStyle = rocks[0].color;
+    rocks.forEach((rock) => {
+      this.context.fillRect(rock.x * size, rock.y * size, size - 1, size - 1);
+    });
   }
 
   drawSnakes(players, size) {
@@ -138,8 +170,8 @@ export class Game {
     return state.players[this.player.id]?.score || 0;
   }
 
-  onPlayerJoin() {
-    this.isReady = true;
+  onPlayerJoin(isReady) {
+    this.isReady = isReady;
   }
 
   onPlayerPause() {
@@ -158,6 +190,8 @@ export class Game {
     api.unsubscribe(SERVER_EVENT.PLAYER_PAUSE);
     api.unsubscribe(SERVER_EVENT.PLAYER_RESPAWN);
     api.unsubscribe(SERVER_EVENT.NO_GAME);
+
+    store.set(STORE_KEY.GAME_ID, "");
     this.emit(GAME_EVENT.END, state);
   }
 
@@ -168,6 +202,8 @@ export class Game {
     api.unsubscribe(SERVER_EVENT.PLAYER_PAUSE);
     api.unsubscribe(SERVER_EVENT.PLAYER_RESPAWN);
     api.unsubscribe(SERVER_EVENT.NO_GAME);
-    this.emit(GAME_EVENT.NO_GAME, state);
+
+    store.set(STORE_KEY.GAME_ID, "");
+    this.emit(GAME_EVENT.NO_GAME);
   }
 }

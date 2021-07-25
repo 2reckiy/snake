@@ -1,9 +1,12 @@
 import { api, CLIENT_EVENT, SERVER_EVENT } from "../lib/api.js";
+import { controlling, CONTROLLING_EVENT } from "../lib/controlling.js";
 import { GAME_EVENT, Game } from "../lib/game.js";
 import { Player } from "../lib/player.js";
 import { spa } from "../lib/spa.js";
-import { store } from "../lib/store.js";
+import { store, STORE_KEY } from "../lib/store.js";
 import AbstractView from "../lib/view.js";
+import template from "./game.html";
+import { audioPlayer } from "../lib/audio-player.js";
 
 export default class extends AbstractView {
   player = null;
@@ -15,32 +18,7 @@ export default class extends AbstractView {
   }
 
   async getHtml() {
-    return `
-      <div id="game">
-        <div id="header">
-          <span><span class="header-title">Player: </span><span id="player" class="header-value"></span></span>
-          <span><span class="header-title">Score: </span><span id="score" class="header-value"></span></span>
-        </div>
-        <canvas id="gameborad" width="400" height="400"></canvas>
-        <div id="menu">
-          <span id="pause" class="menu-button">Pause</span>
-          <span id="respawn" class="menu-button">Respawn</span>
-          <!-- <span id="addai" class="menu-button">Add AI</span> -->
-        </div>
-      </div>
-
-      <div id="end-game-notification-popup" class="popup">
-        <div id="end-game-notification-conatainer" class="popup-container">
-          <span id="popup-title" class="popup-title">Game is over!</span>
-          <div id="popup-content" class="popup-content">
-            <span class="popup-caption">Winner</span><span id="winner-name" class="winner-text"></span>
-            <span class="popup-caption">Score</span><span id="winner-score" class="winner-text"></span>
-          </div>
-          <div class="popup-bottom">
-            <span id="end-game-notification-popup-back" class="popup-button">Back</span>
-          </div>
-        </div>
-      </div>`;
+    return template;
   }
 
   onInit() {
@@ -52,23 +30,20 @@ export default class extends AbstractView {
     this.createPlayer();
 
     const playerEl = document.getElementById("player");
-    playerEl.innerHTML = this.player.id;
+    playerEl.innerHTML = store.get(STORE_KEY.PLAYER_NAME);
 
-    if (this.params.id) {
-      this.gameInit(canvas, context, this.params.id);
+    const gameId = this.params.id || store.get(STORE_KEY.GAME_ID) || "";
+    const gameDifficulty = this.params.difficulty;
+    if (gameId) {
+      this.gameInit(canvas, context, gameId);
       this.joinGame(this.player);
     } else {
       api.subscribe(SERVER_EVENT.GAME_INIT, (gameId) => {
         this.gameInit(canvas, context, gameId);
         this.joinGame(this.player);
       });
-      api.send(CLIENT_EVENT.CREATE_GAME);
+      api.send(CLIENT_EVENT.CREATE_GAME, { difficulty: gameDifficulty });
     }
-
-    const pausetBtn = document.getElementById("pause");
-    pausetBtn.addEventListener("click", (e) => {
-      this.game.togglePause();
-    });
 
     const respawnBtn = document.getElementById("respawn");
     respawnBtn.addEventListener("click", (e) => {
@@ -85,14 +60,22 @@ export default class extends AbstractView {
     this.game.on(GAME_EVENT.END, (state) => this.onGameEnd(state));
     this.game.on(GAME_EVENT.NO_GAME, (stte) => this.onNoGame());
 
-    document.addEventListener("keydown", (e) => {
-      this.game.controlling(e);
+    controlling.on(CONTROLLING_EVENT.KEY_DOWN, (e) => {
+      if (e.keyCode === 32) {
+        this.game.togglePause();
+      } else {
+        this.game.controlling(e);
+      }
     });
+
+    audioPlayer.play(0);
   }
 
   createPlayer() {
-    this.player = new Player(store.user.id);
-    this.player.init(false, true, "green");
+    const playerId = store.get(STORE_KEY.PLAYER_ID);
+    const playerName = store.get(STORE_KEY.PLAYER_NAME);
+    this.player = new Player(playerId, playerName);
+    this.player.init(false, true);
   }
 
   joinGame(player) {
@@ -107,21 +90,19 @@ export default class extends AbstractView {
   onPlayerDead() {
     const respawnBtn = document.getElementById("respawn");
     respawnBtn.classList.toggle("active", true);
-
-    const pausetBtn = document.getElementById("pause");
-    pausetBtn.classList.toggle("active", false);
   }
 
   onPlayerRespawn() {
     const respawnBtn = document.getElementById("respawn");
     respawnBtn.classList.toggle("active", false);
-
-    const pausetBtn = document.getElementById("pause");
-    pausetBtn.classList.toggle("active", true);
   }
 
   onGameEnd(state) {
-    const popupEL = document.getElementById("end-game-notification-popup");
+    audioPlayer.stop();
+    controlling.off(CONTROLLING_EVENT.KEY_DOWN);
+    api.unsubscribe(SERVER_EVENT.GAME_INIT);
+
+    const popupEL = document.getElementById("notification-popup");
     popupEL.classList.toggle("active", true);
 
     const winnerNameEL = document.getElementById("winner-name");
@@ -129,7 +110,7 @@ export default class extends AbstractView {
     const winnerScoreEl = document.getElementById("winner-score");
     winnerScoreEl.innerHTML = state.winnerScore;
 
-    const backBtn = document.getElementById("end-game-notification-popup-back");
+    const backBtn = document.getElementById("notification-popup-back");
     backBtn.addEventListener("click", (e) => {
       // TODO: shopuld clear game instane?
       spa.navigateTo("/#");
@@ -137,13 +118,15 @@ export default class extends AbstractView {
   }
 
   onNoGame() {
-    const popupEL = document.getElementById("end-game-notification-popup");
+    controlling.off(CONTROLLING_EVENT.KEY_DOWN);
+    api.unsubscribe(SERVER_EVENT.GAME_INIT);
+    const popupEL = document.getElementById("notification-popup");
     popupEL.classList.toggle("active", true);
 
     const popupContentEL = document.getElementById("popup-content");
-    popupContentEL.innerHTML = '';
+    popupContentEL.innerHTML = "";
 
-    const backBtn = document.getElementById("end-game-notification-popup-back");
+    const backBtn = document.getElementById("notification-popup-back");
     backBtn.addEventListener("click", (e) => {
       // TODO: shopuld clear game instane?
       spa.navigateTo("/#");

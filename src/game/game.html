@@ -1,14 +1,24 @@
 <div id="game">
-  <div id="header">
-    <span><span class="header-title">Player: </span><span id="player" class="header-value"></span></span>
-    <span><span class="header-title">Score: </span><span id="score" class="header-value"></span></span>
+  <div id="game-header">
+    <span><span class="game-header-title">Player: </span><span id="player" class="game-header-value"></span></span>
+    <span><span class="game-header-title">Score: </span><span id="score" class="game-header-value"></span></span>
   </div>
   <canvas id="gameborad" width="400" height="400"></canvas>
   <div id="menu">
-    <span id="pause" class="menu-button">Pause</span>
-    <span id="restart" class="menu-button">Restart</span>
+    <span id="respawn" class="menu-button">Respawn</span>
     <!-- <span id="addai" class="menu-button">Add AI</span> -->
   </div>
 </div>
-<div id="">
+
+<div id="notification-popup" class="popup">
+  <div id="notification-conatainer" class="popup-container">
+    <span id="popup-title" class="popup-title">Game is over!</span>
+    <div id="popup-content" class="popup-content">
+      <span class="popup-caption">Winner</span><span id="winner-name" class="winner-text"></span>
+      <span class="popup-caption">Score</span><span id="winner-score" class="winner-text"></span>
+    </div>
+    <div class="popup-bottom">
+      <span id="notification-popup-back" class="popup-button">Back</span>
+    </div>
+  </div>
 </div>

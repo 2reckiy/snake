@@ -1,6 +1,6 @@
 
 import io from 'socket.io-client'
-import { store } from "./store.js";
+import { store, STORE_KEY } from "./store.js";
 
 
 export const CLIENT_EVENT = {
@@ -31,15 +31,15 @@ class API {
 
   createConnection() {
     return new Promise((res, rej) => {
-      const previouseConnection = localStorage.getItem("socketId");
+      const previouseConnection = store.get(STORE_KEY.PLAYER_ID);
+      const playerName = store.get(STORE_KEY.PLAYER_NAME);
       this.socket = io(this.url);
       this.socket.on("connect", () => {
-        localStorage.setItem("socketId", this.socket.id);
-        store.setUser(this.socket.id);
+        store.set(STORE_KEY.PLAYER_ID, this.socket.id);
         if (previouseConnection) {
           store.set('previouseSocketId', previouseConnection);
         }
-        res();
+        res(playerName);
       });
     });
   }
@@ -50,7 +50,7 @@ class API {
     });
   }
   unsubscribe(event) {
-    this.socket.removeAllListeners(event);
+    this.socket.off(event);
   }
 
   send(clientEvent, params = {}) {

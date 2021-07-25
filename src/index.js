@@ -6,5 +6,11 @@ document.addEventListener("DOMContentLoaded", () => {
   window.addEventListener("hashchange", () => {
     spa.router(window.location.hash);
   });
-  api.createConnection().then(() => spa.router(window.location.hash));
+  api.createConnection().then((playerName) => {
+    if (!playerName) {
+      spa.navigateTo('#/login');
+    } else {
+      spa.router(window.location.hash);
+    }
+  });
 });

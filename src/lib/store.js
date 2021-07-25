@@ -1,17 +1,15 @@
+export const STORE_KEY = {
+  PLAYER_ID: 'playerId',
+  PLAYER_NAME: 'playerName',
+  GAME_ID: 'gameId',
+}
 class Store {
-  user = null;
-  store = {};
-
   set(key, value) {
-    this.store[key] = value;
+    localStorage.setItem(key, value);
   }
 
   get(key) {
-    return this.store[key];
-  }
-
-  setUser(id) {
-    this.user = { id };
+    return localStorage.getItem(key);
   }
 }
 

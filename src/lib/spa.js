@@ -1,20 +1,18 @@
 import Game from "../game/game.js";
 import Dashboard from "../dashboard/dashboard.js";
+import Login from "../login/login.js";
 
 class SPA {
-  constructor() {
-
-  }
-  async router(hash) {
+  constructor() {}
+  async router(hash, params) {
     this.routes = [
       { path: "/", view: Dashboard },
+      { path: "/login", view: Login },
       { path: "/game", view: Game },
       { path: "/game/:id", view: Game },
     ];
     const route = hash.substr(1);
     let content = document.getElementById("app-content");
-
-    console.log(route);
 
     const potentialMatches = this.routes.map((r) => {
       return {
@@ -34,20 +32,22 @@ class SPA {
       };
     }
 
-    const view = new match.route.view(this.getParams(match));
+    const view = new match.route.view({ ...this.getParams(match), ...params });
 
     content.innerHTML = await view.getHtml();
 
     view.onInit();
   }
 
-  navigateTo = (hash) => {
+  navigateTo = (hash, params) => {
     history.pushState(null, null, hash);
-    this.router(hash);
+    this.router(hash, params);
   };
 
   pathToRegex(path) {
-    return new RegExp("^" + path.replace(/\//g, "\\/").replace(/:\w+/g, "(.+)") + "$");
+    return new RegExp(
+      "^" + path.replace(/\//g, "\\/").replace(/:\w+/g, "(.+)") + "$"
+    );
   }
 
   getParams(match) {
@@ -61,7 +61,7 @@ class SPA {
         return [key, values[i]];
       })
     );
-  };
+  }
 }
 
 export let spa = new SPA();

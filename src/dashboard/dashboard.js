@@ -1,6 +1,8 @@
 import AbstractView from "../lib/view.js";
 import { spa } from "../lib/spa.js";
 import { SERVER_EVENT, api, CLIENT_EVENT } from "../lib/api.js";
+import template from "./dashboard.html";
+import { store, STORE_KEY } from "../lib/store.js";
 
 export default class extends AbstractView {
   constructor(params) {
@@ -9,52 +11,64 @@ export default class extends AbstractView {
   }
 
   async getHtml() {
-    return `
-      <div id="dashboard">
-        <div id="list-container">
-          <div id="game-list-container">
-            <div id="game-list-menu">
-              <span id="no-game-title">No active Games for now...</span>
-              <span id="create-game" class="menu-button">Create Game</span>
-            </div>
-            <div id="game-list"></div>
-          </div>
-          <div id="player-list"><span>Player1</span></div>
-        </div>
-        <div id="menu"></div>
-      </div>`;
+    return template;
   }
 
   onInit() {
     api.subscribe(SERVER_EVENT.GAME_LIST, (games) => this.gameList(games));
-
-    const createGameBtn = document.getElementById("create-game");
-    createGameBtn.addEventListener("click", () => {
-      this.navigateToGame();
-    });
+    const playerName = store.get(STORE_KEY.PLAYER_NAME);
+    const greetingsEl = document.getElementById("greetings");
+    greetingsEl.innerHTML = `Hello, ${playerName}`;
 
     api.send(CLIENT_EVENT.GAME_LIST);
   }
 
   gameList(games) {
-    const noGameTitle = document.getElementById("no-game-title");
     const gameList = document.getElementById("game-list");
-
     gameList.innerHTML = "";
-    noGameTitle.classList.toggle("show", !games.length);
+
+    const newGameEl = this.createGamePreview();
+    gameList.appendChild(newGameEl);
 
     games.forEach((gameId, i) => {
-      const btn = document.createElement("div");
-      btn.id = "current-game";
-      btn.className = "menu-button";
-      btn.innerHTML = `Game ${i}`;
-      btn.onclick = () => this.navigateToGame(gameId);
-      gameList.appendChild(btn);
+      const gameEl = this.createGamePreview(gameId);
+      gameList.appendChild(gameEl);
     });
   }
 
-  navigateToGame(gameId) {
+  createGamePreview(gameId) {
+    const previewEl = document.createElement("div");
+    const previewTitleEl = document.createElement("span");
+
+    previewTitleEl.innerHTML = gameId ? "Join Game" : "New Game";
+    previewEl.className = "game-preview";
+    previewEl.appendChild(previewTitleEl);
+    previewEl.onclick = () => {
+      const popup = document.getElementById("notification-popup");
+      popup.classList.toggle("active", true);
+
+      const popupStart = document.getElementById("notification-popup-start");
+      popupStart.onclick = () => {
+        const radios = document.getElementsByName("radio-option");
+
+        let difficulty = 0;
+        for (var i = 0, length = radios.length; i < length; i++) {
+          if (radios[i].checked) {
+            difficulty = radios[i].value;
+            break;
+          }
+        }
+
+        this.navigateToGame(gameId, { difficulty });
+      };
+    };
+    return previewEl;
+  }
+
+  navigateToGame(gameId, params) {
     api.unsubscribe(SERVER_EVENT.GAME_LIST);
-    gameId ? spa.navigateTo(`#/game/${gameId}`) : spa.navigateTo(`#/game`);
+    gameId
+      ? spa.navigateTo(`#/game/${gameId}`, params)
+      : spa.navigateTo(`#/game`, params);
   }
 }
