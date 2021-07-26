@@ -44,23 +44,29 @@ export default class extends AbstractView {
     previewEl.className = "game-preview";
     previewEl.appendChild(previewTitleEl);
     previewEl.onclick = () => {
-      const popup = document.getElementById("notification-popup");
-      popup.classList.toggle("active", true);
+      if (gameId) {
+        this.navigateToGame(gameId);
+      } else {
+        const popup = document.getElementById("notification-popup");
+        popup.classList.toggle("active", true);
 
-      const popupStart = document.getElementById("notification-popup-start");
-      popupStart.onclick = () => {
-        const radios = document.getElementsByName("radio-option");
-
-        let difficulty = 0;
-        for (var i = 0, length = radios.length; i < length; i++) {
-          if (radios[i].checked) {
-            difficulty = radios[i].value;
-            break;
+        const popupBack = document.getElementById("notification-popup-back");
+        popupBack.onclick = () => popup.classList.toggle("active", false);
+        const popupStart = document.getElementById("notification-popup-start");
+        popupStart.onclick = () => {
+          const radios = document.getElementsByName("radio-option");
+  
+          let difficulty = 0;
+          for (var i = 0, length = radios.length; i < length; i++) {
+            if (radios[i].checked) {
+              difficulty = radios[i].value;
+              break;
+            }
           }
-        }
-
-        this.navigateToGame(gameId, { difficulty });
-      };
+  
+          this.navigateToGame(gameId, { difficulty });
+        };
+      }
     };
     return previewEl;
   }
