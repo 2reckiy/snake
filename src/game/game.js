@@ -1,12 +1,14 @@
+import AbstractView from "../lib/view.js";
 import { api, CLIENT_EVENT, SERVER_EVENT } from "../lib/api.js";
 import { controlling, CONTROLLING_EVENT } from "../lib/controlling.js";
 import { GAME_EVENT, Game } from "../lib/game.js";
 import { Player } from "../lib/player.js";
 import { spa } from "../lib/spa.js";
 import { store, STORE_KEY } from "../lib/store.js";
-import AbstractView from "../lib/view.js";
-import template from "./game.html";
 import { audioPlayer } from "../lib/audio-player.js";
+import { Popup } from "../lib/popup.js";
+import template from "./game.html";
+import endGamePopup from './end-game-popup.html';
 
 export default class extends AbstractView {
   player = null;
@@ -102,34 +104,33 @@ export default class extends AbstractView {
     controlling.off(CONTROLLING_EVENT.KEY_DOWN);
     api.unsubscribe(SERVER_EVENT.GAME_INIT);
 
-    const popupEL = document.getElementById("notification-popup");
-    popupEL.classList.toggle("active", true);
-
-    const winnerNameEL = document.getElementById("winner-name");
-    winnerNameEL.innerHTML = state.winnerName;
-    const winnerScoreEl = document.getElementById("winner-score");
-    winnerScoreEl.innerHTML = state.winnerScore;
-
-    const backBtn = document.getElementById("notification-popup-back");
-    backBtn.addEventListener("click", (e) => {
-      // TODO: shopuld clear game instane?
-      spa.navigateTo("/#");
+    const popup = new Popup(endGamePopup, {
+      title: 'Game over!',
+      variables: {
+        winnerName: state.winnerName,
+        winnerScore: state.winnerScore,
+      },
+      buttons: [
+        {
+          title: 'Back',
+          listener: () => spa.navigateTo("/#"),
+        }
+      ],
     });
   }
 
   onNoGame() {
     controlling.off(CONTROLLING_EVENT.KEY_DOWN);
     api.unsubscribe(SERVER_EVENT.GAME_INIT);
-    const popupEL = document.getElementById("notification-popup");
-    popupEL.classList.toggle("active", true);
 
-    const popupContentEL = document.getElementById("popup-content");
-    popupContentEL.innerHTML = "";
-
-    const backBtn = document.getElementById("notification-popup-back");
-    backBtn.addEventListener("click", (e) => {
-      // TODO: shopuld clear game instane?
-      spa.navigateTo("/#");
+    const popup = new Popup('', {
+      title: 'Game over!',
+      buttons: [
+        {
+          title: 'Back',
+          listener: () => spa.navigateTo("/#"),
+        }
+      ],
     });
   }
 }

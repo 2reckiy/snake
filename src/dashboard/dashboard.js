@@ -1,8 +1,10 @@
 import AbstractView from "../lib/view.js";
 import { spa } from "../lib/spa.js";
 import { SERVER_EVENT, api, CLIENT_EVENT } from "../lib/api.js";
-import template from "./dashboard.html";
 import { store, STORE_KEY } from "../lib/store.js";
+import { Popup } from "../lib/popup.js";
+import template from "./dashboard.html";
+import createGamePopup from "./create-game-popup.html";
 
 export default class extends AbstractView {
   constructor(params) {
@@ -47,25 +49,31 @@ export default class extends AbstractView {
       if (gameId) {
         this.navigateToGame(gameId);
       } else {
-        const popup = document.getElementById("notification-popup");
-        popup.classList.toggle("active", true);
-
-        const popupBack = document.getElementById("notification-popup-back");
-        popupBack.onclick = () => popup.classList.toggle("active", false);
-        const popupStart = document.getElementById("notification-popup-start");
-        popupStart.onclick = () => {
-          const radios = document.getElementsByName("radio-option");
+        const popup = new Popup(createGamePopup, {
+          title: 'Game Settings',
+          buttons: [
+            {
+              title: 'Back',
+              isClose: true,
+            },
+            {
+              title: 'Start',
+              listener: () => {
+                const radios = document.getElementsByName("radio-option");
   
-          let difficulty = 0;
-          for (var i = 0, length = radios.length; i < length; i++) {
-            if (radios[i].checked) {
-              difficulty = radios[i].value;
-              break;
+                let difficulty = 0;
+                for (var i = 0, length = radios.length; i < length; i++) {
+                  if (radios[i].checked) {
+                    difficulty = radios[i].value;
+                    break;
+                  }
+                }
+        
+                this.navigateToGame(gameId, { difficulty });
+              }
             }
-          }
-  
-          this.navigateToGame(gameId, { difficulty });
-        };
+          ],
+        });
       }
     };
     return previewEl;
