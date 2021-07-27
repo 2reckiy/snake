@@ -23,6 +23,8 @@ export class Game {
 
   isReady = false;
 
+  isDeadNotified = false;
+
   constructor(id, canvas, context) {
     this.id = id;
     this.canvas = canvas;
@@ -61,7 +63,7 @@ export class Game {
       (player) => player.id === this.player.id && player.isDead
     );
     if (amIDead) {
-      this.emit(GAME_EVENT.DEAD);
+      this.deadNotification();
     }
     requestAnimationFrame(() => this.handleTick(state));
   }
@@ -180,6 +182,7 @@ export class Game {
 
   onPlayerRespawn() {
     this.isReady = true;
+    this.isDeadNotified = false;
     this.emit(GAME_EVENT.RESPAWN);
   }
 
@@ -205,5 +208,12 @@ export class Game {
 
     store.set(STORE_KEY.GAME_ID, "");
     this.emit(GAME_EVENT.NO_GAME);
+  }
+
+  deadNotification() {
+    if (!this.isDeadNotified) {
+      this.isDeadNotified = true;
+      this.emit(GAME_EVENT.DEAD);
+    }
   }
 }

@@ -9,6 +9,7 @@ import { audioPlayer } from "../lib/audio-player.js";
 import { Popup } from "../lib/popup.js";
 import template from "./game.html";
 import endGamePopup from './end-game-popup.html';
+import deadPopup from './dead-popup.html';
 
 export default class extends AbstractView {
   player = null;
@@ -46,11 +47,6 @@ export default class extends AbstractView {
       });
       api.send(CLIENT_EVENT.CREATE_GAME, { difficulty: gameDifficulty });
     }
-
-    const respawnBtn = document.getElementById("respawn");
-    respawnBtn.addEventListener("click", (e) => {
-      this.game.respawn(this.player);
-    });
   }
 
   gameInit(canvas, context, gameId) {
@@ -58,7 +54,7 @@ export default class extends AbstractView {
 
     this.game.on(GAME_EVENT.TICK, (score) => this.updateScore(score));
     this.game.on(GAME_EVENT.DEAD, () => this.onPlayerDead());
-    this.game.on(GAME_EVENT.RESPAWN, () => this.onPlayerRespawn());
+    this.game.on(GAME_EVENT.RESPAWN, () => {});
     this.game.on(GAME_EVENT.END, (state) => this.onGameEnd(state));
     this.game.on(GAME_EVENT.NO_GAME, (stte) => this.onNoGame());
 
@@ -90,13 +86,12 @@ export default class extends AbstractView {
   }
 
   onPlayerDead() {
-    const respawnBtn = document.getElementById("respawn");
-    respawnBtn.classList.toggle("active", true);
-  }
+    const popup = new Popup(deadPopup, {
+      title: 'You are dead!',
+    });
 
-  onPlayerRespawn() {
-    const respawnBtn = document.getElementById("respawn");
-    respawnBtn.classList.toggle("active", false);
+    const respawn = document.getElementById("respawn");
+    respawn.onclick = () => this.game.respawn(this.player);
   }
 
   onGameEnd(state) {
