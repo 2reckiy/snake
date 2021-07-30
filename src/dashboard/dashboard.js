@@ -59,7 +59,7 @@ export default class extends AbstractView {
             {
               title: 'Start',
               listener: () => {
-                const radios = document.getElementsByName("radio-option");
+                const radios = document.getElementsByName("difficulty-option");
   
                 let difficulty = 0;
                 for (var i = 0, length = radios.length; i < length; i++) {
@@ -74,6 +74,11 @@ export default class extends AbstractView {
             }
           ],
         });
+
+        // const snakeExamples = document.getElementsByClassName("snake-body-example");
+        // for (var i = 0, length = snakeExamples.length; i < length; i++) {
+        //   snakeExamples[i].style.background = 
+        // }
       }
     };
     return previewEl;

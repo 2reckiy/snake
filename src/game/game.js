@@ -5,7 +5,6 @@ import { GAME_EVENT, Game } from "../lib/game.js";
 import { Player } from "../lib/player.js";
 import { spa } from "../lib/spa.js";
 import { store, STORE_KEY } from "../lib/store.js";
-import { audioPlayer } from "../lib/audio-player.js";
 import { Popup } from "../lib/popup.js";
 import template from "./game.html";
 import endGamePopup from './end-game-popup.html';
@@ -36,7 +35,7 @@ export default class extends AbstractView {
     playerEl.innerHTML = store.get(STORE_KEY.PLAYER_NAME);
 
     const gameId = this.params.id || store.get(STORE_KEY.GAME_ID) || "";
-    const gameDifficulty = this.params.difficulty;
+    const gameDifficulty = this.params.difficulty ?? 0;
     if (gameId) {
       this.gameInit(canvas, context, gameId);
       this.joinGame(this.player);
@@ -65,8 +64,6 @@ export default class extends AbstractView {
         this.game.controlling(e);
       }
     });
-
-    audioPlayer.play(0);
   }
 
   createPlayer() {
@@ -91,11 +88,13 @@ export default class extends AbstractView {
     });
 
     const respawn = document.getElementById("respawn");
-    respawn.onclick = () => this.game.respawn(this.player);
+    respawn.onclick = () => {
+      popup.close();
+      this.game.respawn(this.player);
+    }
   }
 
   onGameEnd(state) {
-    audioPlayer.stop();
     controlling.off(CONTROLLING_EVENT.KEY_DOWN);
     api.unsubscribe(SERVER_EVENT.GAME_INIT);
 

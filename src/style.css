@@ -206,7 +206,6 @@ body {
 
 .radio-toolbar label {
   display: inline-block;
-  background-color: #ddd;
   padding: 10px 20px;
   font-family: sans-serif, Arial;
   font-size: 16px;
@@ -220,10 +219,50 @@ body {
 }
 
 .radio-toolbar input[type="radio"]:focus + label {
-    border: 2px solid #444;
+  border: 2px solid #444;
 }
 
 .radio-toolbar input[type="radio"]:checked + label {
-    background-color: #bfb;
-    border-color: #4c4;
+  border-color: #4c4;
+}
+
+.grey {
+  background-color: #ddd;
+}
+
+.green {
+  background-color: #008000;
+}
+
+.blue {
+  background-color: #425ff8;
+}
+
+.yellow {
+  background-color: #f8ec42;
+}
+
+.light-blue {
+  background-color: #42eef8;
+}
+
+.purple {
+  background-color: #bc42f8;
+}
+
+.snake-example {
+  display: flex;
+  width: 160px;
+  height: 20px;
+}
+
+.snake-body-example {
+  width: 20px;
+  margin: 1px;
+}
+
+.food-example {
+  background: #f84242;
+    margin-left: 40px;
+    width: 20px;
 }

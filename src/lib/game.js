@@ -1,5 +1,5 @@
 import { api, CLIENT_EVENT, SERVER_EVENT } from "./api.js";
-import { audioPlayer } from "./audio-player.js";
+import { audioPlayer, SOUND } from "./audio-player.js";
 import { store, STORE_KEY } from "./store.js";
 
 export const GAME_EVENT = {
@@ -40,6 +40,8 @@ export class Game {
     api.subscribe(SERVER_EVENT.NO_GAME, () => this.onNoGame());
 
     store.set(STORE_KEY.GAME_ID, id);
+
+    audioPlayer.play(SOUND.BG);
   }
 
   on(event, listener) {
@@ -111,11 +113,11 @@ export class Game {
   sound(state) {
     // sounds
     if (state.grownNow.includes(this.player.id)) {
-      audioPlayer.play(1);
+      audioPlayer.play(SOUND.EAT);
     }
 
     if (state.diedNow.includes(this.player.id)) {
-      audioPlayer.play(2);
+      audioPlayer.play(SOUND.DIE);
     }
   }
 
@@ -187,6 +189,7 @@ export class Game {
   }
 
   onGameEnd(state) {
+    audioPlayer.stop(SOUND.BG);
     api.unsubscribe(SERVER_EVENT.GAME_JOIN);
     api.unsubscribe(SERVER_EVENT.GAME_TICK);
     api.unsubscribe(SERVER_EVENT.GAME_END);
@@ -199,6 +202,7 @@ export class Game {
   }
 
   onNoGame() {
+    audioPlayer.stop(SOUND.BG);
     api.unsubscribe(SERVER_EVENT.GAME_JOIN);
     api.unsubscribe(SERVER_EVENT.GAME_TICK);
     api.unsubscribe(SERVER_EVENT.GAME_END);

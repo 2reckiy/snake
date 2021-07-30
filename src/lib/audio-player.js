@@ -2,14 +2,22 @@ import bgSound from "../sounds/bg_music.mp3";
 import eatSound from "../sounds/eat.mp3";
 import dieSound from "../sounds/die.wav";
 
+export const SOUND = {
+  BG: 0,
+  EAT: 1,
+  DIE: 2,
+}
 class AudioPlayer {
   sounds = [];
   player = null;
   constructor() {
     const bgAudio = new Audio(bgSound);
+    bgAudio.loop = true;
     const eatAudio = new Audio(eatSound);
     const dieAudio = new Audio(dieSound);
-    this.sounds.push(bgAudio, eatAudio, dieAudio);
+    this.sounds[SOUND.BG] = bgAudio;
+    this.sounds[SOUND.EAT] = eatAudio;
+    this.sounds[SOUND.DIE] = dieAudio;
   }
 
   add(sound, id) {
@@ -22,8 +30,8 @@ class AudioPlayer {
     this.sounds[id].play();
   }
 
-  stop() {
-    this.sounds[0].pause();
+  stop(id) {
+    this.sounds[id].pause();
   }
 }
 
